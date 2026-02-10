@@ -1,0 +1,10 @@
+artifact_location: file:///Users/anass/PycharmProjects/PythonProject9/mlflow/mlruns/710723541858247182/models/m-ae62beefe4124115a51fd19c43177aa3/artifacts
+creation_timestamp: 1770223878450
+experiment_id: '710723541858247182'
+last_updated_timestamp: 1770223880402
+model_id: m-ae62beefe4124115a51fd19c43177aa3
+model_type: null
+name: model
+source_run_id: 2422a2729b7249c1860dc94b6795dfd1
+status: 2
+status_message: null

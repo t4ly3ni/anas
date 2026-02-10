@@ -1,0 +1,23 @@
+artifact_path: file:///Users/anass/PycharmProjects/PythonProject9/mlruns/710723541858247182/models/m-ae62beefe4124115a51fd19c43177aa3/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.12.12
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: skops
+    sklearn_version: 1.8.0
+    skops_trusted_types: null
+mlflow_version: 3.9.0
+model_id: m-ae62beefe4124115a51fd19c43177aa3
+model_size_bytes: 17162466
+model_uuid: m-ae62beefe4124115a51fd19c43177aa3
+prompts: null
+run_id: 2422a2729b7249c1860dc94b6795dfd1
+utc_time_created: '2026-02-04 16:51:18.460889'

@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/anass/PycharmProjects/PythonProject9/mlflow/mlruns/710723541858247182/18a9560d97344cb9b5b172d3e7794700/artifacts
+end_time: 1770316673627
+entry_point_name: ''
+experiment_id: '710723541858247182'
+lifecycle_stage: active
+run_id: 18a9560d97344cb9b5b172d3e7794700
+run_name: training_20260205_193749
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1770316669660
+status: 3
+tags: []
+user_id: anass

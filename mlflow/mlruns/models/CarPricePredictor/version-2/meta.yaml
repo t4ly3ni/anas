@@ -1,0 +1,15 @@
+creation_timestamp: 1770316673613
+current_stage: None
+deployment_job_state: null
+description: null
+last_updated_timestamp: 1770316673613
+model_id: m-74a7b89b23dc42758fed7d88a6ef17f5
+name: CarPricePredictor
+run_id: 18a9560d97344cb9b5b172d3e7794700
+run_link: null
+source: models:/m-74a7b89b23dc42758fed7d88a6ef17f5
+status: READY
+status_message: null
+storage_location: file:///Users/anass/PycharmProjects/PythonProject9/mlflow/mlruns/710723541858247182/models/m-74a7b89b23dc42758fed7d88a6ef17f5/artifacts
+user_id: null
+version: 2

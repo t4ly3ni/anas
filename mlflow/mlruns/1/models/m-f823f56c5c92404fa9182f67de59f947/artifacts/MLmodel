@@ -1,0 +1,23 @@
+artifact_path: /Users/anass/PycharmProjects/PythonProject9/mlruns/1/models/m-f823f56c5c92404fa9182f67de59f947/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.12.12
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.8.0
+    skops_trusted_types: null
+mlflow_version: 3.9.0
+model_id: m-f823f56c5c92404fa9182f67de59f947
+model_size_bytes: 15662431
+model_uuid: m-f823f56c5c92404fa9182f67de59f947
+prompts: null
+run_id: c1fa6e6d24c34893a2333793cceeecce
+utc_time_created: '2026-02-03 20:29:57.517234'

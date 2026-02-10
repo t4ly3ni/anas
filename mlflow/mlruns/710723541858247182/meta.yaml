@@ -1,0 +1,6 @@
+artifact_location: file:///Users/anass/PycharmProjects/PythonProject9/mlflow/mlruns/710723541858247182
+creation_time: 1770223877907
+experiment_id: '710723541858247182'
+last_update_time: 1770223877907
+lifecycle_stage: active
+name: car_price_prediction

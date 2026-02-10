@@ -1,0 +1,47 @@
+{
+    "feature_names": [
+        "Ville",
+        "Marque",
+        "Mod\u00e8le",
+        "Ann\u00e9e-Mod\u00e8le",
+        "Kilom\u00e9trage",
+        "Type de carburant",
+        "Puissance fiscale",
+        "Boite de vitesses",
+        "Nombre de portes",
+        "Origine",
+        "Premi\u00e8re main",
+        "\u00c9tat",
+        "Jantes aluminium",
+        "Climatisation",
+        "Syst\u00e8me de navigation/GPS",
+        "Toit ouvrant",
+        "Si\u00e8ges cuir",
+        "Radar de recul",
+        "Cam\u00e9ra de recul",
+        "Vitres \u00e9lectriques",
+        "ABS",
+        "ESP",
+        "R\u00e9gulateur de vitesse",
+        "Limiteur de vitesse",
+        "CD/MP3/Bluetooth",
+        "Ordinateur de bord",
+        "Verrouillage centralis\u00e9 \u00e0 distance"
+    ],
+    "categorical_cols": [
+        "Ville",
+        "Marque",
+        "Mod\u00e8le",
+        "Kilom\u00e9trage",
+        "Type de carburant",
+        "Boite de vitesses",
+        "Origine",
+        "Premi\u00e8re main",
+        "\u00c9tat"
+    ],
+    "numerical_cols": [
+        "Ann\u00e9e-Mod\u00e8le",
+        "Puissance fiscale",
+        "Nombre de portes"
+    ]
+}

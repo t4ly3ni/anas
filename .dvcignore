@@ -1,0 +1,10 @@
+# Add patterns of files that DVC should ignore
+*.pyc
+__pycache__/
+.pytest_cache/
+.vscode/
+.idea/
+mlruns/
+.mlflow/
+*.log
+.DS_Store
