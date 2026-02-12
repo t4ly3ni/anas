@@ -30,6 +30,11 @@ with st.sidebar:
         
         if st.button(" Recharger le modèle"):
             st.cache_resource.clear()
+            # Clear any cached assets stored in session_state
+            try:
+                st.session_state.pop('assets', None)
+            except Exception:
+                pass
             st.success("Cache cleared! Le modèle sera rechargé.")
     
     st.divider()
@@ -142,14 +147,25 @@ def load_assets(use_mlflow_registry=False, stage="None"):
     
     return model, scaler, feature_info, encoders, km_ranges, price_scaler_info
 
-# Load based on user selection
-assets = load_assets(use_mlflow_registry=use_mlflow, stage=model_stage if use_mlflow else "None")
-model, scaler, feature_info, encoders, km_ranges, price_scaler_info = assets
+# Defer loading until needed and cache in session_state
+def get_assets(use_mlflow_registry=False, stage="None"):
+    cfg = (use_mlflow_registry, stage)
+    if 'assets' not in st.session_state or st.session_state.get('assets_config') != cfg:
+        with st.spinner("Chargement des ressources..."):
+            st.session_state['assets'] = load_assets(use_mlflow_registry=use_mlflow_registry, stage=stage)
+            st.session_state['assets_config'] = cfg
+    return st.session_state['assets']
 
 # Helper function
 def km_to_range(km_value):
     """Convert numeric km value to range string"""
-    for km_range in km_ranges:
+    # Ensure km_ranges available from cached assets
+    if 'assets' not in st.session_state:
+        # Default: try to load with current sidebar selection
+        stage = model_stage if 'model_stage' in globals() else "None"
+        get_assets(use_mlflow_registry=use_mlflow, stage=stage)
+    _, _, _, _, km_ranges_local, _ = st.session_state['assets']
+    for km_range in km_ranges_local:
         parts = km_range.split(' - ')
         if len(parts) == 2:
             low = int(parts[0].replace(' ', ''))
@@ -158,7 +174,7 @@ def km_to_range(km_value):
                 return km_range
     
     ranges_with_midpoints = []
-    for km_range in km_ranges:
+    for km_range in km_ranges_local:
         parts = km_range.split(' - ')
         if len(parts) == 2:
             low = int(parts[0].replace(' ', ''))
@@ -170,7 +186,7 @@ def km_to_range(km_value):
         closest = min(ranges_with_midpoints, key=lambda x: abs(x[1] - km_value))
         return closest[0]
     
-    return km_ranges[0]
+    return km_ranges_local[0] if km_ranges_local else str(km_value)
 
 # 2. Interface utilisateur
 with st.sidebar:
@@ -225,6 +241,10 @@ with st.sidebar:
 # 3. Prédiction
 if st.button("💰 Estimer le prix", use_container_width=True):
     try:
+        # Load assets lazily based on sidebar selection
+        stage_val = model_stage if 'model_stage' in globals() else "None"
+        model, scaler, feature_info, encoders, km_ranges, price_scaler_info = get_assets(use_mlflow_registry=use_mlflow, stage=stage_val)
+
         input_data = pd.DataFrame({
             'Ville': [ville],
             'Marque': [marque],

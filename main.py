@@ -66,11 +66,22 @@ def load_assets():
         st.stop()
 
 
-model, scaler, feature_info, encoders, km_ranges, price_scaler_info = load_assets()
+# Defer heavy loading until needed (first prediction) and cache in session_state
+model = scaler = feature_info = encoders = km_ranges = price_scaler_info = None
+
+def get_assets():
+    if 'assets' not in st.session_state:
+        with st.spinner("Chargement des ressources..."):
+            st.session_state['assets'] = load_assets()
+    return st.session_state['assets']
 
 # Helper function to convert numeric kilometers to range string
 def km_to_range(km_value):
-    for km_range in km_ranges:
+    # Ensure km_ranges are available from cached assets
+    if 'assets' not in st.session_state:
+        get_assets()
+    _, _, _, _, km_ranges_local, _ = st.session_state['assets']
+    for km_range in km_ranges_local:
         # Parse range like "50 000 - 54 999"
         parts = km_range.split(' - ')
         if len(parts) == 2:
@@ -80,7 +91,7 @@ def km_to_range(km_value):
                 return km_range
     # If no exact match, return the closest range
     ranges_with_midpoints = []
-    for km_range in km_ranges:
+    for km_range in km_ranges_local:
         parts = km_range.split(' - ')
         if len(parts) == 2:
             low = int(parts[0].replace(' ', ''))
@@ -91,7 +102,7 @@ def km_to_range(km_value):
         # Find closest midpoint
         closest = min(ranges_with_midpoints, key=lambda x: abs(x[1] - km_value))
         return closest[0]
-    return km_ranges[0]  # Fallback to first range
+    return km_ranges_local[0] if km_ranges_local else str(km_value)
 
 # 2. Interface utilisateur (Sidebar ou Formulaire)
 with st.sidebar:
@@ -147,6 +158,9 @@ with st.sidebar:
 # 3. Préparation des données pour la prédiction
 if st.button("Estimer le prix", use_container_width=True):
     try:
+        # Load assets lazily and cache them in session_state
+        model, scaler, feature_info, encoders, km_ranges, price_scaler_info = get_assets()
+
         # Create a DataFrame with the input data - EXACT column order from training
         input_data = pd.DataFrame({
             'Ville': [ville],

@@ -1,0 +1,14 @@
+__pycache__/
+.venv/
+venv/
+.git/
+mlflow/
+mlruns/
+data/raw/
+*.pyc
+*.pyo
+*.pyd
+*.log
+build/
+dist/
+*.egg-info

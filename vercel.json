@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "carprice-app",
+  "builds": [
+    { "src": "Dockerfile", "use": "@vercel/docker" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/" }
+  ]
+}
