@@ -4,15 +4,15 @@ import pandas as pd
 import joblib
 import numpy as np
 import json
-import mlflow
-import mlflow.sklearn
-from mlflow.tracking import MlflowClient
+# mlflow is imported lazily inside load_assets when requested to avoid slow imports
+# and heavy initialization during module import on deploy platforms.
 from sklearn.preprocessing import LabelEncoder
 
 # Configuration de la page
 st.set_page_config(page_title="Predicteur de Prix Avito (MLflow)", layout="wide")
 
 st.title(" Estimation du prix de voiture (Maroc)")
+st.text("Initialisation de l'application (MLflow)...")
 # Sidebar pour configuration MLflow
 with st.sidebar:
     st.header(" Configuration MLOps")
@@ -42,6 +42,16 @@ def load_assets(use_mlflow_registry=False, stage="None"):
     if use_mlflow_registry:
         # Load from MLflow
         with st.spinner(" Chargement depuis MLflow Model Registry..."):
+            # Import mlflow lazily to avoid heavy startup at module import time
+            try:
+                import mlflow
+                import mlflow.sklearn
+                from mlflow.tracking import MlflowClient
+            except Exception as e:
+                st.error(f" Erreur lors de l'import de MLflow: {str(e)}")
+                st.info("💡 Assurez-vous que MLflow est présent dans requirements.txt ou désactivez 'Utiliser MLflow Model Registry'.")
+                st.stop()
+
             mlflow.set_tracking_uri("file:./mlflow/mlruns")
             
             model_name = "CarPricePredictor"
@@ -97,28 +107,38 @@ def load_assets(use_mlflow_registry=False, stage="None"):
     with open('artifacts/price_scaler_info.json', 'r') as f:
         price_scaler_info = json.load(f)
     
-    # Load training data for encoders
-    df_full = pd.read_csv('data/raw/avito_car_dataset_ALL.csv', encoding='latin1')
-    
-    for col in ['Origine', 'Première main', 'État']:
-        if df_full[col].isnull().any():
-            mode_value = df_full[col].mode()[0]
-            df_full[col] = df_full[col].fillna(mode_value)
-    
-    if df_full['Nombre de portes'].isnull().any():
-        median_value = df_full['Nombre de portes'].median()
-        df_full['Nombre de portes'] = df_full['Nombre de portes'].fillna(median_value)
-    
-    df_full = df_full.drop(['Airbags', 'Secteur', 'Lien'], axis=1, errors='ignore')
-    
-    encoders = {}
-    categorical_cols = feature_info['categorical_cols']
-    for col in categorical_cols:
-        le = LabelEncoder()
-        le.fit(df_full[col].unique())
-        encoders[col] = le
-    
-    km_ranges = sorted(df_full['Kilométrage'].unique())
+    # Try to load pre-built encoders to avoid loading a large CSV at import
+    try:
+        encoders = joblib.load('models/encoders.pkl')
+        if 'Kilométrage' in encoders and hasattr(encoders['Kilométrage'], 'classes_'):
+            km_ranges = sorted(list(encoders['Kilométrage'].classes_))
+        else:
+            km_ranges = []
+    except Exception:
+        # Fallback: build encoders from training CSV (slower)
+        df_full = pd.read_csv('data/raw/avito_car_dataset_ALL.csv', encoding='latin1')
+        for col in ['Origine', 'Première main', 'État']:
+            if col in df_full.columns and df_full[col].isnull().any():
+                mode_value = df_full[col].mode()[0]
+                df_full[col] = df_full[col].fillna(mode_value)
+
+        if 'Nombre de portes' in df_full.columns and df_full['Nombre de portes'].isnull().any():
+            median_value = df_full['Nombre de portes'].median()
+            df_full['Nombre de portes'] = df_full['Nombre de portes'].fillna(median_value)
+
+        df_full = df_full.drop(['Airbags', 'Secteur', 'Lien'], axis=1, errors='ignore')
+
+        encoders = {}
+        categorical_cols = feature_info['categorical_cols']
+        for col in categorical_cols:
+            le = LabelEncoder()
+            le.fit(df_full[col].astype(str).unique())
+            encoders[col] = le
+
+        if 'Kilométrage' in df_full.columns:
+            km_ranges = sorted(df_full['Kilométrage'].unique())
+        else:
+            km_ranges = []
     
     return model, scaler, feature_info, encoders, km_ranges, price_scaler_info
 

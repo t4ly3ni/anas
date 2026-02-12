@@ -24,26 +24,40 @@ def load_assets():
         # Load price scaling parameters (for inverse transformation)
         with open('artifacts/price_scaler_info.json', 'r') as f:
             price_scaler_info = json.load(f)
-        # Load training data to build encoders
-        df_full = pd.read_csv('data/raw/avito_car_dataset_ALL.csv', encoding='latin1')
-        # Apply same preprocessing
-        for col in ['Secteur', 'Origine', 'Première main', 'État']:
-            if df_full[col].isnull().any():
-                mode_value = df_full[col].mode()[0]
-                df_full[col] = df_full[col].fillna(mode_value)
-        if df_full['Nombre de portes'].isnull().any():
-            median_value = df_full['Nombre de portes'].median()
-            df_full['Nombre de portes'] = df_full['Nombre de portes'].fillna(median_value)
-        df_full = df_full.drop('Airbags', axis=1)
-        # Create encoders for categorical columns
-        encoders = {}
-        categorical_cols = feature_info['categorical_cols']
-        for col in categorical_cols:
-            le = LabelEncoder()
-            le.fit(df_full[col].unique())
-            encoders[col] = le
-        # Get unique Kilométrage ranges for mapping
-        km_ranges = sorted(df_full['Kilométrage'].unique())
+
+        # Try to load pre-built encoders to avoid loading a large CSV at import
+        try:
+            encoders = joblib.load('models/encoders.pkl')
+            # Try to infer km_ranges from encoder classes if available
+            if 'Kilométrage' in encoders and hasattr(encoders['Kilométrage'], 'classes_'):
+                km_ranges = sorted(list(encoders['Kilométrage'].classes_))
+            else:
+                km_ranges = []
+        except Exception:
+            # Fallback: build encoders from training CSV (slower)
+            df_full = pd.read_csv('data/raw/avito_car_dataset_ALL.csv', encoding='latin1')
+            # Apply same preprocessing
+            for col in ['Secteur', 'Origine', 'Première main', 'État']:
+                if col in df_full.columns and df_full[col].isnull().any():
+                    mode_value = df_full[col].mode()[0]
+                    df_full[col] = df_full[col].fillna(mode_value)
+            if 'Nombre de portes' in df_full.columns and df_full['Nombre de portes'].isnull().any():
+                median_value = df_full['Nombre de portes'].median()
+                df_full['Nombre de portes'] = df_full['Nombre de portes'].fillna(median_value)
+            if 'Airbags' in df_full.columns:
+                df_full = df_full.drop('Airbags', axis=1)
+            # Create encoders for categorical columns
+            encoders = {}
+            categorical_cols = feature_info['categorical_cols']
+            for col in categorical_cols:
+                le = LabelEncoder()
+                le.fit(df_full[col].astype(str).unique())
+                encoders[col] = le
+            # Get unique Kilométrage ranges for mapping
+            if 'Kilométrage' in df_full.columns:
+                km_ranges = sorted(df_full['Kilométrage'].unique())
+            else:
+                km_ranges = []
         return model, scaler, feature_info, encoders, km_ranges, price_scaler_info
     except Exception as e:
         st.error(f"Erreur lors du chargement des ressources: {str(e)}")
